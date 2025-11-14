@@ -1,0 +1,487 @@
+import React, { useState, useContext, useEffect, useRef } from "react";
+import {
+  MdSmartToy,
+  MdSend,
+  MdPerson,
+  MdAdd,
+  MdClose,
+  MdRefresh,
+} from "react-icons/md";
+import axios from "axios";
+import { toast } from "react-toastify";
+import "../../styles/individual/AIAssistant.css";
+import { Context } from "../../../main";
+
+const API_BASE_URL = "http://localhost:4000/api/v1/calendar";
+
+const IndividualAIAssistant = () => {
+  const { isAuthenticated, user } = useContext(Context);
+
+  const [chatMessages, setChatMessages] = useState([]);
+  const [inputMessage, setInputMessage] = useState("");
+  const [generatedTasks, setGeneratedTasks] = useState([]);
+  const [aiExplanation, setAiExplanation] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const chatEndRef = useRef(null);
+  const hasLoaded = useRef(false); // Add this ref
+
+  // Load chat messages from localStorage on mount
+  useEffect(() => {
+    if (user && !hasLoaded.current) {
+      // Check the flag
+      hasLoaded.current = true; // Set the flag to true
+
+      // Load chat history
+      const chatStorageKey = `ai_chat_individual_${user._id}`;
+      const savedChats = localStorage.getItem(chatStorageKey);
+      if (savedChats) {
+        try {
+          const parsedChats = JSON.parse(savedChats);
+          if (parsedChats.length > 0) {
+            setChatMessages(parsedChats);
+          } else {
+            // If stored chat is empty, set default message
+            setChatMessages([
+              {
+                role: "assistant",
+                content:
+                  "👋 Hi! I'm your AI assistant. Tell me about your tasks and schedule, and I'll help you organize them efficiently.",
+                timestamp: new Date().toISOString(),
+              },
+            ]);
+          }
+        } catch (error) {
+          console.error("Error loading chat history:", error);
+        }
+      } else {
+        // If no chat history, set default message
+        setChatMessages([
+          {
+            role: "assistant",
+            content:
+              "👋 Hi! I'm your AI assistant. Tell me about your tasks and schedule, and I'll help you organize them efficiently.",
+            timestamp: new Date().toISOString(),
+          },
+        ]);
+      }
+
+      // Load generated tasks from localStorage
+      const tasksStorageKey = `ai_tasks_individual_${user._id}`;
+      const savedTasks = localStorage.getItem(tasksStorageKey);
+      if (savedTasks) {
+        try {
+          const parsedTasks = JSON.parse(savedTasks);
+          setGeneratedTasks(parsedTasks.tasks || []);
+          setAiExplanation(parsedTasks.explanation || "");
+          console.log(
+            "📋 Loaded generated tasks from localStorage:",
+            parsedTasks.tasks?.length
+          );
+        } catch (error) {
+          console.error("Error loading generated tasks:", error);
+        }
+      }
+    }
+  }, [user]);
+
+  // Save chat messages to localStorage whenever they change
+  useEffect(() => {
+    if (user && chatMessages.length > 0) {
+      const storageKey = `ai_chat_individual_${user._id}`;
+      localStorage.setItem(storageKey, JSON.stringify(chatMessages));
+    }
+  }, [chatMessages, user]);
+
+  // Save generated tasks to localStorage whenever they change
+  useEffect(() => {
+    if (user) {
+      const tasksStorageKey = `ai_tasks_individual_${user._id}`;
+      const tasksData = {
+        tasks: generatedTasks,
+        explanation: aiExplanation,
+      };
+      localStorage.setItem(tasksStorageKey, JSON.stringify(tasksData));
+      console.log(
+        "💾 Saved generated tasks to localStorage:",
+        generatedTasks.length
+      );
+    }
+  }, [generatedTasks, aiExplanation, user]);
+
+  // Auto-scroll to bottom of chat
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages]);
+
+  // Handle sending message to AI
+  const handleSendMessage = async () => {
+    if (!inputMessage.trim()) {
+      toast.error("Please enter a message");
+      return;
+    }
+
+    const userMessage = {
+      role: "user",
+      content: inputMessage,
+      timestamp: new Date().toISOString(),
+    };
+
+    setChatMessages((prev) => [...prev, userMessage]);
+    setInputMessage("");
+    setIsLoading(true);
+
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/ai/chat-individual`,
+        {
+          message: inputMessage,
+        },
+        { withCredentials: true }
+      );
+
+      const { explanation, tasks } = response.data;
+
+      // Add AI response to chat
+      const aiMessage = {
+        role: "assistant",
+        content: explanation,
+        timestamp: new Date().toISOString(),
+      };
+      setChatMessages((prev) => [...prev, aiMessage]);
+
+      // Set generated tasks and AI explanation
+      setGeneratedTasks(tasks || []);
+      setAiExplanation(explanation);
+
+      toast.success("AI generated tasks successfully!");
+    } catch (error) {
+      console.error("❌ Error chatting with AI:", error);
+
+      // Get error message from backend
+      const backendError =
+        error.response?.data?.message ||
+        "Failed to get AI response. Please try again.";
+
+      // Show user-friendly error toast
+      if (
+        backendError.includes("high traffic") ||
+        backendError.includes("overloaded")
+      ) {
+        toast.error("🔥 AI is busy right now. Try again in 10-20 seconds!", {
+          autoClose: 5000,
+        });
+      } else if (backendError.includes("Rate limit")) {
+        toast.error("⏰ Please wait 30 seconds before trying again", {
+          autoClose: 5000,
+        });
+      } else {
+        toast.error(backendError, { autoClose: 4000 });
+      }
+
+      // Add helpful error message to chat
+      let chatErrorMessage = "Sorry, I encountered an error. ";
+
+      if (
+        backendError.includes("high traffic") ||
+        backendError.includes("overloaded")
+      ) {
+        chatErrorMessage =
+          "🔥 I'm experiencing high traffic right now. Please wait 10-20 seconds and try again. Tip: Try asking for fewer tasks (e.g., '3 tasks') or a simpler question.";
+      } else if (backendError.includes("Rate limit")) {
+        chatErrorMessage =
+          "⏰ Rate limit reached. Please wait 30 seconds before sending another message.";
+      } else {
+        chatErrorMessage += "Please try again or rephrase your question.";
+      }
+
+      const errorMessage = {
+        role: "assistant",
+        content: chatErrorMessage,
+        timestamp: new Date().toISOString(),
+      };
+      setChatMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle creating task from AI suggestion
+  const handleCreateTask = async (taskIndex) => {
+    const task = generatedTasks[taskIndex];
+
+    try {
+      // Create calendar event with proper time
+      const startDate = new Date();
+      startDate.setHours(9, 0, 0, 0); // 9 AM start
+
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() + (task.estimatedDays || 3));
+      endDate.setHours(17, 0, 0, 0); // 5 PM end
+
+      // Map priority from AI response to database format
+      const priorityMap = {
+        High: "high",
+        Medium: "medium",
+        Low: "low",
+        Urgent: "urgent",
+      };
+      const mappedPriority =
+        priorityMap[task.priority] || task.priority?.toLowerCase() || "medium";
+
+      const eventData = {
+        subject: task.title,
+        description: task.description || "",
+        startTime: startDate.toISOString(),
+        endTime: endDate.toISOString(),
+        isAllDay: false,
+        location: "",
+        priority: mappedPriority,
+        status: "scheduled",
+        category: "work",
+        categoryColor:
+          mappedPriority === "high" || mappedPriority === "urgent"
+            ? "#F44336"
+            : mappedPriority === "medium"
+            ? "#FF9800"
+            : "#4CAF50",
+        isPrivate: false,
+      };
+
+      console.log("📤 Creating event with data:", eventData);
+
+      const response = await axios.post(`${API_BASE_URL}/events`, eventData, {
+        withCredentials: true,
+      });
+
+      console.log("✅ Event created:", response.data);
+      toast.success(`✅ Task "${task.title}" added to calendar!`);
+
+      // Remove the task from generated tasks
+      setGeneratedTasks((prev) => prev.filter((_, idx) => idx !== taskIndex));
+    } catch (error) {
+      console.error("❌ Error creating task:", error);
+      console.error("❌ Error response:", error.response?.data);
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to create task. Please try again."
+      );
+    }
+  };
+
+  // Handle dismissing a task
+  const handleDismissTask = (taskIndex) => {
+    setGeneratedTasks((prev) => prev.filter((_, idx) => idx !== taskIndex));
+    toast.info("Task dismissed");
+  };
+
+  // Handle key press in input
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  // Handle starting a new chat (clear history)
+  const handleNewChat = () => {
+    if (user) {
+      // Clear chat messages from localStorage
+      const chatStorageKey = `ai_chat_individual_${user._id}`;
+      localStorage.removeItem(chatStorageKey);
+
+      // Clear generated tasks from localStorage
+      const tasksStorageKey = `ai_tasks_individual_${user._id}`;
+      localStorage.removeItem(tasksStorageKey);
+
+      // Reset state to default
+      setChatMessages([
+        {
+          role: "assistant",
+          content:
+            "👋 Hi! I'm your AI assistant. Tell me about your tasks and schedule, and I'll help you organize them efficiently.",
+          timestamp: new Date().toISOString(),
+        },
+      ]);
+      setGeneratedTasks([]);
+      setAiExplanation("");
+      setInputMessage("");
+
+      toast.success("✨ Started a new chat!");
+      console.log("🆕 Cleared chat and tasks from localStorage");
+    }
+  };
+
+  return (
+    <div className="individual-ai-page">
+      <div className="page-header">
+        <div className="header-content">
+          <MdSmartToy className="header-icon" />
+          <div>
+            <h1>AI Personal Assistant</h1>
+            <p>Chat with AI to organize your personal tasks and schedule</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="ai-chat-container">
+        {/* LEFT PANEL: Chat Interface */}
+        <div className="chat-panel">
+          <div className="chat-header">
+            <div className="chat-header-left">
+              <MdSmartToy />
+              <span>AI Assistant</span>
+            </div>
+            <button
+              className="new-chat-btn"
+              onClick={handleNewChat}
+              title="Start a new chat (clears history and tasks)">
+              <MdRefresh /> New Chat
+            </button>
+          </div>
+
+          <div className="chat-messages">
+            {chatMessages.map((msg, idx) => (
+              <div
+                key={idx}
+                className={`chat-message ${
+                  msg.role === "user" ? "user-message" : "ai-message"
+                }`}>
+                <div className="message-icon">
+                  {msg.role === "user" ? <MdPerson /> : <MdSmartToy />}
+                </div>
+                <div className="message-content">
+                  <p>{msg.content}</p>
+                  <span className="message-time">
+                    {new Date(msg.timestamp).toLocaleTimeString()}
+                  </span>
+                </div>
+              </div>
+            ))}
+            {isLoading && (
+              <div className="chat-message ai-message">
+                <div className="message-icon">
+                  <MdSmartToy />
+                </div>
+                <div className="message-content">
+                  <p className="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </p>
+                </div>
+              </div>
+            )}
+            <div ref={chatEndRef} />
+          </div>
+
+          <div className="chat-input-container">
+            <textarea
+              className="chat-input"
+              placeholder="Describe your tasks or ask for help organizing your schedule..."
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              rows={3}
+              disabled={isLoading}
+            />
+            <button
+              className="send-button"
+              onClick={handleSendMessage}
+              disabled={isLoading || !inputMessage.trim()}>
+              <MdSend />
+            </button>
+          </div>
+        </div>
+
+        {/* RIGHT PANEL: Generated Tasks */}
+        <div className="tasks-panel">
+          <div className="tasks-header">
+            <h3>Generated Tasks ({generatedTasks.length})</h3>
+            {aiExplanation && <p className="ai-explanation">{aiExplanation}</p>}
+          </div>
+
+          <div className="tasks-list">
+            {generatedTasks.length === 0 ? (
+              <div className="empty-tasks">
+                <MdSmartToy className="empty-icon" />
+                <p>No tasks generated yet</p>
+                <span>
+                  Chat with AI to generate tasks based on your schedule
+                </span>
+              </div>
+            ) : (
+              generatedTasks.map((task, idx) => (
+                <div key={idx} className="task-card">
+                  <div className="task-header">
+                    <h4>{task.title}</h4>
+                    <button
+                      className="dismiss-btn"
+                      onClick={() => handleDismissTask(idx)}
+                      title="Dismiss task">
+                      <MdClose />
+                    </button>
+                  </div>
+                  <p className="task-description">{task.description}</p>
+                  <div className="task-meta">
+                    <span
+                      className={`priority-badge priority-${task.priority?.toLowerCase()}`}>
+                      {task.priority || "Medium"}
+                    </span>
+                    <span className="estimated-days">
+                      ~{task.estimatedDays || 3} days
+                    </span>
+                  </div>
+                  <div className="task-timing">
+                    <span className="timing-label">📅 Start:</span>
+                    <span className="timing-value">
+                      {new Date().toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </span>
+                    <span className="timing-separator">→</span>
+                    <span className="timing-label">End:</span>
+                    <span className="timing-value">
+                      {new Date(
+                        new Date().getTime() +
+                          (task.estimatedDays || 3) * 24 * 60 * 60 * 1000
+                      ).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </span>
+                  </div>
+                  <div className="task-actions">
+                    <button
+                      className="create-btn"
+                      onClick={() => handleCreateTask(idx)}>
+                      <MdAdd /> Add to Calendar
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Quick Tips */}
+          {generatedTasks.length === 0 && (
+            <div className="tips-section">
+              <h4>💡 Tips for Better Results</h4>
+              <ul>
+                <li>Be specific about your tasks and deadlines</li>
+                <li>Mention priorities (urgent, important, etc.)</li>
+                <li>Include estimated time for each task</li>
+                <li>Ask for suggestions on task organization</li>
+              </ul>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default IndividualAIAssistant;

@@ -1,0 +1,280 @@
+/* ===============================
+   INDIVIDUAL CALENDAR PAGE
+   =============================== */
+
+/* Custom Calendar Styles */
+.custom-calendar {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Calendar Header Styling */
+
+
+.custom-calendar .e-toolbar-item button {
+  color: white;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.custom-calendar .e-toolbar-item button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Event Styling */
+.custom-calendar .e-appointment {
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-weight: 600;
+  font-size: 13px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.custom-calendar .e-appointment:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Month View Cell Styling */
+.custom-calendar .e-month-view .e-work-cells {
+  border-color: #E9EDF7;
+}
+
+.custom-calendar .e-month-view .e-current-day {
+  background: #F4F7FE;
+}
+
+/* Day/Week View Time Slots */
+.custom-calendar .e-time-slots {
+  border-color: #E9EDF7;
+}
+
+.custom-calendar .e-work-hours {
+  background: #FAFBFC;
+}
+
+/* Event Popup Styling */
+.custom-calendar .e-schedule-dialog {
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.custom-calendar .e-dlg-header {
+  background: linear-gradient(135deg, #4318FF 0%, #5B24FF 100%);
+  color: white;
+  border-radius: 16px 16px 0 0;
+  padding: 20px;
+  font-weight: 700;
+}
+
+.custom-calendar .e-dlg-content {
+  padding: 24px;
+}
+
+/* Form Field Styling */
+.custom-calendar .e-schedule-form .e-field {
+  margin-bottom: 20px;
+}
+
+.custom-calendar .e-schedule-form .e-field label {
+  font-weight: 600;
+  color: #1B2559;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.custom-calendar .e-schedule-form input,
+.custom-calendar .e-schedule-form textarea,
+.custom-calendar .e-schedule-form select {
+  border: 2px solid #E9EDF7;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.custom-calendar .e-schedule-form input:focus,
+.custom-calendar .e-schedule-form textarea:focus,
+.custom-calendar .e-schedule-form select:focus {
+  outline: none;
+  border-color: #4318FF;
+  box-shadow: 0 0 0 3px rgba(67, 24, 255, 0.1);
+}
+
+/* Button Styling */
+.custom-calendar .e-btn {
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.custom-calendar .e-btn.e-primary {
+  background: linear-gradient(135deg, #4318FF 0%, #5B24FF 100%);
+  border: none;
+}
+
+.custom-calendar .e-btn.e-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(67, 24, 255, 0.3);
+}
+
+.custom-calendar .e-btn.e-flat {
+  color: #68769F;
+}
+
+/* Quick Info Popup */
+.custom-calendar .e-quick-popup-wrapper {
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.custom-calendar .e-event-popup {
+  border-radius: 12px;
+}
+
+/* Drag & Drop Feedback */
+.custom-calendar .e-appointment.e-dragging {
+  opacity: 0.7;
+  transform: scale(0.95);
+}
+
+/* Resize Handle */
+.custom-calendar .e-resize-handler {
+  background: #4318FF;
+  border-radius: 4px;
+}
+
+/* Today Button */
+.custom-calendar .e-today {
+  background: white;
+  color: #4318FF;
+  font-weight: 700;
+  border: 2px solid white;
+}
+
+.custom-calendar .e-today:hover {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+/* View Switcher */
+.custom-calendar .e-views {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 4px;
+}
+
+/* Navigation Arrows */
+.custom-calendar .e-prev,
+.custom-calendar .e-next {
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+}
+
+/* Month/Year Selector */
+.custom-calendar .e-date-range {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+/* Agenda View */
+.custom-calendar .e-agenda-view .e-appointment {
+  border-left: 4px solid;
+  padding-left: 12px;
+}
+
+/* Loading Animation */
+.custom-calendar .e-spinner-pane {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(4px);
+}
+
+/* All Day Row */
+.custom-calendar .e-all-day-cells {
+  background: #F9FAFB;
+}
+
+/* Weekend Cells */
+.custom-calendar .e-weekend-cells {
+  background: #FAFBFC;
+}
+
+/* Current Time Indicator */
+.custom-calendar .e-current-timeline {
+  border-color: #FF5722;
+  border-width: 2px;
+}
+
+.custom-calendar .e-current-time {
+  background: #FF5722;
+  color: white;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .custom-calendar .e-schedule-toolbar {
+    padding: 12px;
+  }
+
+  .custom-calendar .e-date-range {
+    font-size: 14px;
+  }
+
+  .custom-calendar .e-appointment {
+    font-size: 12px;
+    padding: 3px 6px;
+  }
+}
+
+/* Animation for event creation */
+@keyframes eventCreate {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.custom-calendar .e-appointment.e-new-event {
+  animation: eventCreate 0.3s ease-out;
+}
+
+/* Priority Indicators (already handled in component, but add extra styling) */
+.custom-calendar .e-appointment.priority-high {
+  border: 3px solid #FF5722 !important;
+  font-weight: bold;
+}
+
+.custom-calendar .e-appointment.priority-urgent {
+  border: 3px solid #E91E63 !important;
+  font-weight: bold;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(233, 30, 99, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(233, 30, 99, 0);
+  }
+}
+
+/* Private Event Indicator */
+.custom-calendar .e-appointment.private-event {
+  border-left: 5px solid #9C27B0 !important;
+}
+
+/* Completed Event Styling */
+.custom-calendar .e-appointment.completed {
+  opacity: 0.6;
+  text-decoration: line-through;
+}

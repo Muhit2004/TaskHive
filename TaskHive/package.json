@@ -1,0 +1,16 @@
+{
+  "name": "taskhive",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install:client": "cd Client && npm install",
+    "install:server": "cd server && npm install",
+    "build": "cd Client && npm run build",
+    "vercel-build": "npm run build"
+  },
+  "dependencies": {
+    "nodemailer": "^7.0.6",
+    "react-icons": "^5.5.0",
+    "recharts": "^3.4.1"
+  }
+}
