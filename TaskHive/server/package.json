@@ -22,5 +22,10 @@
     "node-cron": "^4.2.1",
     "nodemailer": "^7.0.6",
     "twilio": "^5.9.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^29.0.0",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "rollup": "^4.53.2"
   }
 }
