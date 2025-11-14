@@ -6,7 +6,7 @@
     "install:client": "cd Client && npm install",
     "install:server": "cd server && npm install",
     "build": "cd Client && npm run build",
-    "vercel-build": "npm run build"
+    "vercel-build": "npm run install:client && npm run build"
   },
   "dependencies": {
     "nodemailer": "^7.0.6",
