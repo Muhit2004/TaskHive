@@ -53,8 +53,6 @@ const GroupAdmin = () => {
   const tabs = [
     { id: "members", label: "Members", icon: <MdPeople /> },
     { id: "permissions", label: "Permissions", icon: <MdSecurity /> },
-    { id: "notifications", label: "Notifications", icon: <MdNotifications /> },
-    { id: "settings", label: "Settings", icon: <MdSettings /> },
   ];
 
   // Fetch Groups
@@ -534,57 +532,6 @@ const GroupAdmin = () => {
                   <li>✗ Cannot edit group settings</li>
                 </ul>
               </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === "notifications" && (
-          <div className="notifications-section">
-            <h2>Notification Settings</h2>
-            <div className="notification-options">
-              <div className="option-item">
-                <label>
-                  <input type="checkbox" defaultChecked />
-                  <span>Email notifications for new events</span>
-                </label>
-              </div>
-              <div className="option-item">
-                <label>
-                  <input type="checkbox" defaultChecked />
-                  <span>Task assignment notifications</span>
-                </label>
-              </div>
-              <div className="option-item">
-                <label>
-                  <input type="checkbox" />
-                  <span>Daily digest emails</span>
-                </label>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === "settings" && (
-          <div className="settings-section">
-            <h2>Group Settings</h2>
-            <div className="settings-form">
-              <div className="form-group">
-                <label>Group Name</label>
-                <input type="text" defaultValue="My Team" />
-              </div>
-              <div className="form-group">
-                <label>Description</label>
-                <textarea defaultValue="Team collaboration space"></textarea>
-              </div>
-              <div className="form-group">
-                <label>Time Zone</label>
-                <select>
-                  <option>UTC</option>
-                  <option>EST</option>
-                  <option>PST</option>
-                </select>
-              </div>
-              <button className="save-btn">Save Changes</button>
             </div>
           </div>
         )}
